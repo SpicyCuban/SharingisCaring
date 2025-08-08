@@ -1,0 +1,47 @@
+import time
+import random
+
+print("Welcome to Street Rat Simulator!")
+#time.sleep(1)
+username = input("What is your name? \n")
+#time.sleep(1)
+print("Hello, " +username +", good luck out there...")
+
+year = 0
+money = 40
+weed_inventory = 0
+weed_price = 10
+
+
+
+while True:
+    user_input = input("Press enter to continue \n")
+    if user_input == "":
+        year += 1
+        
+        print(f"Year: {year}")
+        print(f"You currently have {money} money!")
+        print(f"You currently have {weed_inventory}g Weed!\n")
+    elif user_input.lower() == "b":
+        print(f"You currently have {money} money!")
+        print(f"You currently have {weed_inventory}g Weed!\n")
+        weed_price = str(weed_price)
+        buy_weed = input(f"Would you like to buy a weed? (Current price: " + weed_price + ")\n")
+        weed_price = int(weed_price)
+        if buy_weed.lower() == "y":
+            amount = input("How much weed do you want to buy: ")
+            amount = int(amount)
+            price = amount * weed_price
+            if price > money:
+                print("You don't have enough money!")
+            else:
+                weed_inventory += amount
+                money -= price
+
+
+        def change_value_random() -> int:
+            weed_price = random.randint(7, 14)
+            return weed_price
+
+    else:
+        print("Invalid input. Please press Enter or type 'b'.")
