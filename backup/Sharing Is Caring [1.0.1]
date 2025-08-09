@@ -1,1 +1,85 @@
+@echo off
+title Sharing is Caring!
+set appVersion=1.0.1
 
+:APPLICATION_FILECHECK
+set CurrentCD=%cd%
+set TempCD=%UserProfile%\AppData\Roaming\SiC\Temp
+echo Checking if storage files are present . . . 
+if exist %UserProfile%\AppData\Roaming\SiC goto :FILES_INSTALLED
+set /p choice=Do you want to install storage files?[y/n]
+if %choice%==n exit
+echo Creating Application Storage Files..
+md %UserProfile%\AppData\Roaming\SiC
+md %UserProfile%\AppData\Roaming\SiC\Temp
+md %UserProfile%\AppData\Roaming\SiC\Scripts
+echo Application files succesfully installed! && ping -n 2 127.0.0.1>nul
+
+:FILES_INSTALLED
+goto :GLOBAL_MENU
+
+
+:DOWNLOAD_INDEXLIST
+cd %TempCD%
+SetLocal EnableDelayedExpansion
+echo.
+if exist %TempCD%\IndexedList.txt echo Removing [%TempCD%\IndexedList.txt] && del /q %TempCD%\IndexedList.txt
+echo Updating Index List...
+echo.
+powershell -Command "Invoke-WebRequest https://raw.githubusercontent.com/SpicyCuban/SharingisCaring/refs/heads/main/IndexedList -Outfile IndexedList.txt"
+for /f "delims=" %%x in (IndexedList.txt) do set content=%%x
+
+set "cmd=findstr /R /N "^^" IndexedList.txt | find /C ":""
+for /f %%a in ('!cmd!') do set number=%%a
+
+:MAIN_MENU-INSTALL
+cls
+echo [96m++++++++++++++++++++++++++++++++[0m
+echo [96m+[91m Sharing is Caring![0m            [96m+[0m
+echo [96m+[92m Version : V%appVersion%[0m              [96m+[0m
+echo [96m+[94m Kartana Software[0m              [96m+[0m
+echo [96m++++++++++++++++++++++++++++++++[0m
+echo.
+echo  [94mIndexed Script Numbere[0m : %number%
+echo.
+echo  [94mList Script Names[0m      : &&  type IndexedList.txt
+echo.
+set /p cmd=Enter a [file name]:
+SET downURL=UNDEFINED
+if %cmd%==BaseApp set downURL=https://raw.githubusercontent.com/SpicyCuban/SharingisCaring/refs/heads/main/Scripts/BaseApp
+if %cmd%==StreetRatSim set downURL=https://raw.githubusercontent.com/SpicyCuban/SharingisCaring/refs/heads/main/Scripts/StreetRatSim
+if %cmd%==MRT set downURL=https://raw.githubusercontent.com/SpicyCuban/SharingisCaring/refs/heads/main/Scripts/MRT
+GOTO :INSTALL_SCRIPT
+if %cmd% == else echo Unrecognized command detected! && ping -n 2 127.0.0.1>nul && goto MAIN_MENU-INSTALL
+
+goto MAIN_MENU-INSTALL
+
+:INSTALL_SCRIPT
+CLS
+echo.
+echo Verifying Network connection...
+
+
+:GLOBAL_MENU
+cls
+echo.
+echo [96m++++++++++++++++++++++++++++++++[0m
+echo [96m+[91m Sharing is Caring![0m            [96m+[0m
+echo [96m+[92m Version : V%appVersion%[0m              [96m+[0m
+echo [96m+[94m Kartana Software[0m              [96m+[0m
+echo [96m++++++++++++++++++++++++++++++++[0m
+echo.
+echo 1 = [Manage Installed Scripts]
+echo 2 = [Download Files]
+echo 3 = [Other]
+echo.
+echo 4 = [Exit Console]
+echo.
+set /p opt=Select next action:
+
+if %opt%==1 goto :MANAGE_INSTALLED
+if %opt%==2 goto :DOWNLOAD_INDEXLIST
+if %opt%==3 goto :OTHER
+if %opt%==4 goto exit
+
+if %ERRORLEVEL% equ 1 echo Action not recognized! && ping -n 2 127.0.0.1>nul && goto :GLOBAL_MENU
