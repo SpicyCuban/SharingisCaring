@@ -1,0 +1,354 @@
+@echo off
+cls
+:ABSOLUTE_BOOTSTART
+set ver=1.0.1.0
+set internetConnectivity=FALSE
+echo.
+:: DECLARING_SHORTCUT_VARS
+set tempfolder=%tmp%\NetworkTestr.TEMP\temp
+set root=%tmp%\NetworkTestr.TEMP
+:: PRE-CHECKS
+if not exist %tmp%\NetworkTestr.TEMP md %tmp%\NetworkTestr.TEMP && md %tmp%\NetworkTestr.TEMP\shared && md %tmp%\NetworkTestr.TEMP\logs
+if not exist %tmp%\NetworkTestr.TEMP\logs md %tmp%\NetworkTestr.TEMP\logs
+if not exist %tmp%\NetworkTestr.TEMP\temp md %tmp%\NetworkTestr.TEMP\temp
+if not exist %tmp%\NetworkTestr.TEMP\shared md %tmp%\NetworkTestr.TEMP\shared
+if not exist %tmp%\NetworkTestr.TEMP\currentHost.NTR echo google.com > %tmp%\NetworkTestr.TEMP\currentHost.NTR
+if not exist %tmp%\NetworkTestr.TEMP\wget.exe goto INSTALL-WGET
+goto MAIN_PAGE
+
+:INSTALL-WGET
+::echo Installing : %tmp%\NetworkTestr.TEMP\wget.exe 
+Ping google.com -n 1 -w 1000
+if errorlevel 1 (set internetConnectivity=FALSE)
+if errorlevel 0 (set internetConnectivity=TRUE)
+:: CHECKING_CONNECTIVITY
+if %internetConnectivity%==FALSE echo [91mERROR[0m: Internet Connection could not be Established! && timeout /t 4 /nobreak>nul && goto ABSOLUTE_BOOTSTART
+echo Downloading and Installing WGET.exe ... && timeout /t 1 /nobreak>nul && powershell -Command "$progressPreference = 'silentlyContinue' ; Invoke-WebRequest https://eternallybored.org/misc/wget/1.21.3/64/wget.exe -Outfile %tmp%\NetworkTestr.TEMP\wget.exe"
+if NOT exist %tmp%\NetworkTestr.TEMP\wget.exe echo [91mERROR[0m: WGET.exe was downloaded but not received please reinstall app or check wifi! && timeout /t 6 /nobreak>nul && goto ABSOLUTE_BOOTSTART
+goto MAIN_PAGE
+:MAIN_PAGE
+cls
+echo.
+cd %tmp%\NetworkTestr.TEMP
+for /f "delims=" %%x in (currentHost.NTR) do set host=%%x
+title NetworkTestr V%ver%
+echo.
+echo [96m++++++++++++++++++++++++++++++++[0m
+echo [96m+[91mNetworkTestR[0m                  [96m+[0m
+echo [96m+[92mCurrentVer : V%ver%[0m         [96m+[0m
+echo [96m+[94mKartana Software[0m              [96m+[0m
+echo [96m++++++++++++++++++++++++++++++++[0m
+echo Current Host : %host%
+echo.
+echo 1 - Start Monitoring
+echo 2 - View Monotoring Logs
+echo 3 - Settings
+echo 4 - Quit
+echo.
+set /p input="> "
+if %input%==1 goto VIEW_MONITOR_TESTS
+if %input%==2 goto VML_MONITOR
+if %input%==3 goto START_SETTINGS
+if %input%==4 exit
+
+:VIEW_MONITOR_TESTS
+cls
+echo.
+ECHO.
+echo [96m++++++++++++++++++++++++++++++++[0m
+echo [96m+[91mNetworkTestR[0m                  [96m+[0m
+echo [96m+[92mCurrentVer : V%ver%[0m         [96m+[0m
+echo [96m+[94mKartana Software[0m              [96m+[0m
+echo [96m++++++++++++++++++++++++++++++++[0m
+echo.
+echo 1 - Real-Time Monitoring
+echo 2 - Extended Test (10 Minutes)
+echo 3 - Fast Test (1 Minute)
+echo 4 - Return
+echo.
+set /p input="> "
+if %input%==1 goto START_MONITOR
+if %input%==2 set /a maxTimeElapsed=600 && goto :START_OTHER_MONITOR
+if %input%==3 set /a maxTimeElapsed=60 && goto :START_OTHER_MONITOR
+if %input%==4 goto ABSOLUTE_BOOTSTART
+
+:START_OTHER_MONITOR
+:: PREPPING
+:: DECLARING_GENERAL_MONITOR_VARS
+set IP=%host%
+set /a uptimeOFF=0
+set /a uptimeON=0
+set /a offlineCounter=0
+set commandExecuted=UNDEFINED
+set commandData=None
+set /a uptimeCounter=1
+set /a commandInput=0
+set /a offlineDebugger=0
+set /a addOffline=0
+SET currentConnection=OFFLINE
+set /a packetLost=0
+set /a packetArrived=0
+set /a totalLogs=0
+set /a oneTimeMonitor=0
+set logsViewStatus=NOT_AVAILABLE
+set /a numberOfLinesCalcd=0
+setlocal EnableDelayedExpansion
+:: DONE_DECLARING_VARS
+set otherTestLocation=FAST_MONITOR_LOOP
+set /a otherTest=1
+set /a timeElapsed=0
+echo Erasing Previous Logs... && del /q %tmp%\NetworkTestr.TEMP\logs\collectedLogsOTHER.log && del /q %tmp%\NetworkTestr.TEMP\logs\pingLog.log
+:FAST_MONITOR_LOOP
+echo Monitoring Network Activity ... (%timeElapsed%/%maxTimeElapsed%)
+if %timeElapsed%==%maxTimeElapsed% echo Monitoring Test Completed! && timeout /t 1 /nobreak>nul && goto FAST_MONITOR_LOOP-DISPLAY
+goto BEGIN_LOOP 
+
+:FAST_MONITOR_LOOP-DISPLAY
+echo.
+echo -------- [96mMonitoring Information[0m --------
+echo.
+type %tmp%\NetworkTestr.TEMP\logs\collectedLogsOTHER.log
+pause>nul && goto VIEW_MONITOR_TESTS
+
+:START_EXT_MONITOR
+
+
+:VML_MONITOR
+cls
+echo Gathering Log Data...
+pause>nul
+exit
+
+:START_SETTINGS
+cls
+cd %tmp%\NetworkTestr.TEMP
+for /f "delims=" %%x in (currentHost.NTR) do set host=%%x
+title NetworkTestr V%ver%
+echo.
+echo [96m++++++++++++++++++++++++++++++++[0m
+echo [96m+[91mNetworkTestR[0m                  [96m+[0m
+echo [96m+[92mCurrentVer : V%ver%[0m         [96m+[0m
+echo [96m+[94mKartana Software[0m              [96m+[0m
+echo [96m++++++++++++++++++++++++++++++++[0m
+echo Current Host : %host%
+echo.
+echo 1 - Change Host Destination
+echo 2 - Update 
+echo 3 - Debug Mode 
+echo 4 - Return
+echo.
+set /p input="> "
+if %input%==1 goto SETTINGS_CHD
+if %input%==2 goto SETTINGS_UPDATER
+if %input%==3 goto DEBUG_MODE
+if %input%==4 goto ABSOLUTE_BOOTSTART
+
+:DEBUG_MODE
+title APPLICATION_DEBUG_MODE
+cls
+echo.
+set /p debugInput="> "
+::if %debugInput%==listen goto DEBUG_MODE-LISTENING_FOR_COMMAND
+if %debugInput%==resetlogs del /q %tmp%\NetworkTestr.TEMP\logs\collectedLogs.log && goto DEBUG_MODE
+if %debugInput%==return goto START_SETTINGS
+echo Command not recognized! && timeout /t 2 /nobreak>nul && goto DEBUG_MODE
+
+:DEBUG_MODE-LISTENING_FOR_COMMAND
+set commandExecuted=UNDEFINED
+set commandData=None
+set /a uptimeCounter=1
+cls
+echo.
+echo Listening for Commands...
+cd %tmp%\NetworkTestr.TEMP\shared
+if exist renewip.command set commandExecuted=Renewed IP && set commandData=ipconfig /renew && set /a commandInput=1 && del /q renewip.command
+if exist clearhistory.command set commandExecuted=Cleared History && set commandData=ipconfig /flushdns && set /a commandInput=1 && del /q clearhistory.command
+if exist addoffline.command set commandExecuted=Add Offline && set addOffline=1 && set /a commandInput=1 && del /q addoffline.command
+echo -------DEBUG---------
+echo CommandID : %commandExecuted%
+echo Command Data : %commandData%
+echo.
+timeout /t 3 /nobreak
+goto DEBUG_MODE-LISTENING_FOR_COMMAND
+
+:SETTINGS_CHD
+cls
+echo.
+set /p newHost=Please enter new host name (IP,Web Name):
+PING -n 2 %newHost% | FIND "TTL" > nul
+IF NOT ERRORLEVEL 0 echo [93mWARNING[0m: Host is not responding! && timeout /t 1 /nobreak>nul
+echo %newHost% > %tmp%\NetworkTestr.TEMP\currentHost.NTR && echo [92mSuccesfully Changed to : %newHost%[0m && timeout /t 2 /nobreak>nul
+goto START_SETTINGS
+
+:START_MONITOR
+cls
+echo.
+set /p que=Do you want to reset the logs?[Y/N]
+:: RESET_LOGS_OPT
+if %que%==Y del /q %tmp%\NetworkTestr.TEMP\logs\pingLog.log && del /q %tmp%\NetworkTestr.TEMP\logs\collectedLogs.log && del /q %tmp%\NetworkTestr.TEMP\logs\speedLog.log
+if %que%==y del /q %tmp%\NetworkTestr.TEMP\logs\pingLog.log && del /q %tmp%\NetworkTestr.TEMP\logs\collectedLogs.log && del /q %tmp%\NetworkTestr.TEMP\logs\speedLog.log
+echo Starting Monitoring Script...
+set IP=%host%
+:: DECLARING_VARS
+set /a uptimeOFF=0
+set /a uptimeON=0
+set /a offlineCounter=0
+set commandExecuted=UNDEFINED
+set commandData=None
+set /a uptimeCounter=1
+set /a commandInput=0
+set /a offlineDebugger=0
+set /a addOffline=0
+SET currentConnection=OFFLINE
+set /a packetLost=0
+set /a packetArrived=0
+set /a totalLogs=0
+set /a oneTimeMonitor=0
+set logsViewStatus=NOT_AVAILABLE
+set /a numberOfLinesCalcd=0
+set /a otherTest=0
+set speedRange=
+echo.
+setlocal EnableDelayedExpansion
+
+:BEGIN_LOOP
+:: LISTENING_FOR_COMMAND --outdated
+::cd %tmp%\NetworkTestr.TEMP\shared
+::if exist renewip.command set commandExecuted=Renewed IP && set commandData=ipconfig /renew && set /a commandInput=1 && del /q renewip.command
+::if exist clearhistory.command set commandExecuted=Cleared History && set commandData=ipconfig /flushdns && set /a commandInput=1 && del /q clearhistory.command
+::if exist addoffline.command set commandExecuted=Add Offline && set addOffline=1 && set /a commandInput=1 && del /q addoffline.command
+::PING_CALC
+FOR /F "tokens=1-9 delims==< " %%a IN ('PING -n 1 -w 2000 %IP%') DO IF "%%h"=="TTL" SET _PING_NO=%%g
+SET RESPONSE=%_PING_NO:ms=%
+set pingNoMS=%RESPONSE%
+if %RESPONSE% LSS 50 set RESPONSE=[92m%RESPONSE%ms[0m
+if %RESPONSE% GEQ 50 set RESPONSE=[93m%RESPONSE%ms[0m
+if %RESPONSE% GEQ 100 set RESPONSE=[91m%RESPONSE%ms[0m
+::UPTIME_CALC
+set currentConnection=ONLINE
+cd .
+ping -n 1 %IP% | find "Reply from " >NUL
+IF NOT ERRORLEVEL 1 set currentConnection=ONLINE
+IF ERRORLEVEL 1 set currentConnection=OFFLINE
+if %currentConnection%==ONLINE set currentConnection=[92m%currentConnection%[0m && set /a uptimeON=%uptimeON%+1
+if %currentConnection%==OFFLINE set currentConnection=[91m%currentConnection%[0m && set /a uptimeOFF=%uptimeOFF%+1
+:: UPTIME_COUNTER
+::if %currentConnection%==OFFLINE set /a uptimeOFF=%uptimeOFF%+1
+::echo after
+::pause
+::if %currentConnection%==ONLINE set /a uptimeON+1
+set /a uptimeCounter=%uptimeCounter%+1
+::set /a uptimeCalc=%uptimeCounter%/%uptimeOFF%
+:: TYPE_CALC
+set wifiType=[93mWireless[0m
+netsh int ipv4 show interfaces | find "connected     Ethernet" >NUL
+IF NOT ERRORLEVEL 1 set wifiType=[92mWired[0m
+:: LAN_CALC
+set lanConn=[93mConnected[0m
+netsh int ipv4 show interfaces | find "disconnected  LAN-" > NUL
+IF NOT ERRORLEVEL 1 set lanConn=[92mDisconnected[0m
+:: EXECUTE_COMMAND
+if %commandInput%==0 set commandStatus=None
+if %commandInput%==1 set /a commandStatus=[91mFailed[0m
+if %commandInput%==1 %commandData% && set /a commandStatus=[92mSucces[0m
+:: XTRA_CALCS
+set /a offlineCounter=%uptimeCounter%-%uptimeON%
+if %offlineDebugger%==0 set /a offlineCounter=%offlineCounter%-1 && set /a offlineDebugger=1
+:: PACKETLOSS_CALC
+ping %IP% -n 1 | find "Lost = 0">nul
+if ERRORLEVEL 1 set /a packetLost=%packetLost%+1
+IF ERRORLEVEL 0 set /a packetArrived=%packetArrived%+1
+if %packetLost% GEQ 1 set packetLost=[91m%packetLost%[0m
+if %packetLost%==0 set packetLost=[92m%packetLost%[0m
+:: GET_IP
+for /f "delims=[] tokens=2" %%a in ('ping -4 -n 1 %ComputerName% ^| findstr [') do set NetworkIP=%%a
+:: LOG_STUFF
+echo %pingNoMS%+ >> %tmp%\NetworkTestr.TEMP\logs\pingLog.log
+echo Ping: %RESPONSE%[90m[0m, Connection Status: %currentConnection%, Packages Lost: %packetLost%, Packet Arrived: [92m%packetArrived%[0m >> %tmp%\NetworkTestr.TEMP\logs\collectedLogs.log
+:: NUM1
+set "cmd=findstr /R /N "^^" %tmp%\NetworkTestr.TEMP\logs\collectedLogs.log | find /C ":""
+for /f %%a in ('!cmd!') do set totalLogs=%%a
+:: NUM2
+set "cmd=findstr /R /N "^^" %tmp%\NetworkTestr.TEMP\logs\pingLog.log | find /C ":""
+for /f %%a in ('!cmd!') do set totalPingLogs=%%a
+:: NUM 3
+set "cmd=findstr /R /N "^^" %tmp%\NetworkTestr.TEMP\logs\speedLog.log | find /C ":""
+for /f %%a in ('!cmd!') do set totalSpeedLogs=%%a
+:: AVERAGE PING CALCULATION
+set monitorIng=
+for /f "Tokens=* Delims=" %%x in (%tmp%\NetworkTestr.TEMP\logs\pingLog.log) do set monitorIng=!monitorIng!%%x
+:: MAKE_COMPUTABLE
+set monitorIng=%monitorIng: =%
+set monitorIngCalc=%monitorIng:~0,-1%
+set /a averagePing1=%monitorIngCalc%
+set /a averagePing2=%averagePing1%/%totalPingLogs%
+:: GET_INTERNET_SPEED
+set downloadedPage=http://www.theage.com.au/business/markets
+cd %root%
+%tmp%\NetworkTestr.TEMP\wget.exe --delete-after %downloadedPage% 2>%tmp%\NetworkTestr.TEMP\temp\outputSpeed.txt
+for /F "tokens=2 delims=( " %%a in ('type %tmp%\NetworkTestr.TEMP\temp\outputSpeed.txt ^| find /i " saved "') do set timeRN=%%a
+
+find /i " MB/s)" %tmp%\NetworkTestr.TEMP\temp\outputSpeed.txt>NUL
+if errorlevel 0 goto MB-WGET
+if errorlevel 1 goto KB-WGET
+set wifiSpeed=[91mCOULD_NOT_GET_WIFI_SPEED[0m
+goto AFTER-SPEED-DETECTION
+
+:MB-WGET
+set speedRange=[92mMB/s[0m
+for /f "tokens=3 delims= " %%a in ('find /i "MB/s)" %tmp%\NetworkTestr.TEMP\temp\outputSpeed.txt') do set wifiSpeed=%%a
+set wifiSpeed=%wifiSpeed:~1,4%
+set wifiSpeedSave=%wifiSpeed:~0,-3%
+echo %wifiSpeedSave%+ >> %tmp%\NetworkTestr.TEMP\logs\speedLog.log
+goto AFTER-SPEED-DETECTION
+
+:KB-WGET
+set wifiSpeed=TOO_SLOW_TO_READ
+:AFTER-SPEED-DETECTION
+del /q %tmp%\NetworkTestr.TEMP\temp\outputSpeed.txt
+:: DEBUG
+title NetworkTestr - Uptime Counter : %uptimeCounter% , Offline Counter : %offlineCounter%
+:: ASSIGN_COLOR_GENERIC
+if %averagePing2% LSS 50 set averagePing2=[92m%averagePing2%ms[0m
+if %averagePing2% GEQ 50 set averagePing2=[93m%averagePing2%ms[0m
+if %averagePing2% GEQ 100 set averagePing2=[91m%averagePing2%ms[0m
+:: AVERAGE_SPEED_COMPUTE
+set monitorIng2=
+for /f "Tokens=* Delims=" %%x in (%tmp%\NetworkTestr.TEMP\logs\speedLog.log) do set monitorIng2=!monitorIng2!%%x
+set monitorIng2=%monitorIng2: =%
+set monitorIngCalc2=%monitorIng2:~0,-1%
+set /a averageSpeed=%monitorIngCalc2%
+set /a averageSpeed2=%averageSpeed%/%totalSpeedLogs%
+:: ASSIGN_SPEED_COLOR
+if %averageSpeed2% LSS 2 set averageSpeed2=[91m%averageSpeed2%[0m
+if %averageSpeed2% GEQ 3 set averageSpeed2=[93m%averageSpeed2%[0m
+if %averageSpeed2% GEQ 5 set averageSpeed2=[92m%averageSpeed2%[0m
+:: AVERAGE_SPEED_COMPUTE2
+:: ENDING_LOG
+echo Ping: %RESPONSE%[90m[0m, Connection Status: %currentConnection%, Packages Lost: %packetLost%, Packet Arrived: [92m%packetArrived%[0m, Average Ping : %averagePing2%, Connection Speed : %wifiSpeed% %speedRange% >> %tmp%\NetworkTestr.TEMP\logs\collectedLogsOTHER.log
+
+set /a timeElapsed+=1
+if %otherTest%==1 goto :%otherTestLocation%
+cls
+echo.
+echo -------- [96mFixed Info[0m --------
+echo.
+echo Type Connection : %wifiType%
+echo LAN-Connection : %lanConn%
+echo Network IP : [92m%NetworkIP%[0m
+echo.
+echo -------- [96mVariables[0m --------
+echo.
+echo Ping: %RESPONSE%[90m[0m, Average Ping : %averagePing2% , Connection Status: %currentConnection%
+echo Packages Lost : %packetLost% , Packet Arrived : [92m%packetArrived%[0m
+echo Connection Speed : [92m%wifiSpeed%[0m %speedRange%, Average Connection Speed : [92m%averageSpeed2%[0m (rounded)
+echo.
+echo -------- [96mServer Logs[0m --------
+echo.
+echo Total Logs Collected : [92m%totalLogs%[0m
+echo Total Ping Logs : [92m%totalPingLogs%[0m
+echo Total Speed Logs : [92m%totalSpeedLogs%[0m
+echo.
+timeout /t 1 /nobreak>NUL
+set /a oneTimeMonitor=0
+goto BEGIN_LOOP
