@@ -1,19 +1,29 @@
 @echo off
 title Sharing is Caring!
-set appVersion=1.0.1
+set appVersion=1.0.2
 
 :APPLICATION_FILECHECK
+rem :: SETTING FOLDER SHORTCUT VARIABLES 
 set CurrentCD=%cd%
 set TempCD=%UserProfile%\AppData\Roaming\SiC\Temp
+set ScriptCD=%UserProfile%\AppData\Roaming\SiC\Scripts
 echo Checking if storage files are present . . . 
 if exist %UserProfile%\AppData\Roaming\SiC goto :FILES_INSTALLED
 set /p choice=Do you want to install storage files?[y/n]
 if %choice%==n exit
 echo Creating Application Storage Files..
+REM :: WRITING_FOLDERS
 md %UserProfile%\AppData\Roaming\SiC
 md %UserProfile%\AppData\Roaming\SiC\Temp
 md %UserProfile%\AppData\Roaming\SiC\Scripts
-echo Application files succesfully installed! && ping -n 2 127.0.0.1>nul
+REM :: CHECKING_IF_FILES_ARE_PRESENT
+set /a installError=0
+if NOT exist %UserProfile%\AppData\Roaming\SiC echo [91mERROR : [%UserProfile%\AppData\Roaming\SiC] could not be located![0m && set /a installError+=1
+if NOT exist %UserProfile%\AppData\Roaming\SiC\Temp echo [91mERROR : [%UserProfile%\AppData\Roaming\SiC\Temp] could not be located![0m && set /a installError+=1
+if NOT exist %UserProfile%\AppData\Roaming\SiC\Scripts echo [91mERROR : [%UserProfile%\AppData\Roaming\SiC\Scripts] could not be located![0m && set /a installError+=1
+
+if %installError%==1 echo [92mApplication files succesfully installed![0m && ping -n 2 127.0.0.1>nul && goto :FILES_INSTALLED
+if %installError% GEQ 1 echo [91m%installError% folders could not be written.[0m && goto :FILES_INSTALLED
 
 :FILES_INSTALLED
 goto :GLOBAL_MENU
@@ -23,7 +33,7 @@ goto :GLOBAL_MENU
 cd %TempCD%
 SetLocal EnableDelayedExpansion
 echo.
-if exist %TempCD%\IndexedList.txt echo Removing [%TempCD%\IndexedList.txt] && del /q %TempCD%\IndexedList.txt
+if exist %TempCD%\IndexedList.txt echo Removing ... [%TempCD%\IndexedList.txt] && del /q %TempCD%\IndexedList.txt
 echo Updating Index List...
 echo.
 powershell -Command "Invoke-WebRequest https://raw.githubusercontent.com/SpicyCuban/SharingisCaring/refs/heads/main/IndexedList -Outfile IndexedList.txt"
@@ -40,26 +50,41 @@ echo [96m+[92m Version : V%appVersion%[0m              [96m+[0m
 echo [96m+[94m Kartana Software[0m              [96m+[0m
 echo [96m++++++++++++++++++++++++++++++++[0m
 echo.
-echo  [94mIndexed Script Numbere[0m : %number%
+echo  [95mIndexed Script Number [0m : %number%
 echo.
-echo  [94mList Script Names[0m      : &&  type IndexedList.txt
+echo  [95mList Script Names[0m      : &&  type IndexedList.txt
 echo.
+echo (type: 'return' to go back!)
 set /p cmd=Enter a [file name]:
 SET downURL=UNDEFINED
-if %cmd%==BaseApp set downURL=https://raw.githubusercontent.com/SpicyCuban/SharingisCaring/refs/heads/main/Scripts/BaseApp
-if %cmd%==StreetRatSim set downURL=https://raw.githubusercontent.com/SpicyCuban/SharingisCaring/refs/heads/main/Scripts/StreetRatSim
-if %cmd%==MRT set downURL=https://raw.githubusercontent.com/SpicyCuban/SharingisCaring/refs/heads/main/Scripts/MRT
+if %cmd%==return goto :GLOBAL_MENU
+if %cmd%==BaseApp.bat set downURL=https://raw.githubusercontent.com/SpicyCuban/SharingisCaring/refs/heads/main/Scripts/BaseApp
+if %cmd%==StreetRatSim.py set downURL=https://raw.githubusercontent.com/SpicyCuban/SharingisCaring/refs/heads/main/Scripts/StreetRatSim
+if %cmd%==MRT.bat set downURL=https://raw.githubusercontent.com/SpicyCuban/SharingisCaring/refs/heads/main/Scripts/MRT
 GOTO :INSTALL_SCRIPT
 if %cmd% == else echo Unrecognized command detected! && ping -n 2 127.0.0.1>nul && goto MAIN_MENU-INSTALL
 
 goto MAIN_MENU-INSTALL
 
 :INSTALL_SCRIPT
-CLS
 echo.
 echo Verifying Network connection...
+Ping www.google.nl -n 1 -w 1000>nul
+if errorlevel 1 (set internet=False)
+if errorlevel 0 (set internet=True)
+rem :: Verifying msg
+if %internet%==False echo [91mUnable to verify internet connection. Please try again later.[0m && ping -n 4 127.0.0.1>nul && goto :GLOBAL_MENU
+if %internet%==True echo [92mSuccesfully verified Internet connectivity![0m && ping -n 2 127.0.0.1>nul
+echo Installing Script .. [%cmd%] .. ServerURL . . [%downURL%]
+powershell -Command "Invoke-WebRequest %downURL% -Outfile %ScriptCD%\%cmd%"
+if NOT exist %ScriptCD%\%cmd% echo ERROR: the file could not be downloaded! && ping -n 4 127.0.0.1>nul && goto :GLOBAL_MENU
+if exist %ScriptCD%\%cmd% echo Succesfully downloaded file on [%ScriptCD%\%cmd%]
+set /p opt=Open the [%ScriptCD%] folder?[y/n]
+if %opt%==n goto :GLOBAL_MENU
+if %opt%==y %SystemRoot%\explorer.exe "%ScriptCD%"
+goto :GLOBAL_MENU
 
-
+pause
 :GLOBAL_MENU
 cls
 echo.
@@ -81,6 +106,7 @@ if %opt%==1 goto :MANAGE_INSTALLED
 if %opt%==2 goto :DOWNLOAD_INDEXLIST
 if %opt%==3 goto :OTHER
 if %opt%==4 goto exit
+IF %opt%==44 rmdir /s /q %UserProfile%\AppData\Roaming\SiC && goto :APPLICATION_FILECHECK
 
 if %ERRORLEVEL% equ 1 echo Action not recognized! && ping -n 2 127.0.0.1>nul && goto :GLOBAL_MENU
 
